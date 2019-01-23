@@ -2,8 +2,8 @@ package com.xuecheng.api.cms;
 
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
-import com.xuecheng.framework.domain.cms.response.CmsPageResult;
-import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.framework.model.response.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -27,7 +27,7 @@ public interface CmsPageControllerApi {
     @ApiOperation("分页查询页面列表")
     @ApiImplicitParams({@ApiImplicitParam(name="page",value="页码",required=true,paramType="path",dataType="int"),
             @ApiImplicitParam(name="size",value="每页记录 数",required=true,paramType="path",dataType="int")})
-    public QueryResponseResult findList(int page, int size, QueryPageRequest queryPageRequest);
+    public CmsResult<PaginationVo<CmsPage>> findList(int page, int size, QueryPageRequest queryPageRequest);
 
     /**
      *  添加页面
@@ -35,14 +35,14 @@ public interface CmsPageControllerApi {
      * @return
      */
     @ApiOperation("添加页面")
-    public CmsPageResult add(CmsPage cmsPage);
+    public CmsResult<CmsPage> add(CmsPage cmsPage);
 
     /**
      * 根据id查询页面信息
      * @return
      */
     @ApiOperation("根据Id查询页面")
-    public CmsPageResult findById(String id);
+    public CmsResult<CmsPage> findById(String id);
 
     /**
      *  更新页面信息
@@ -51,7 +51,7 @@ public interface CmsPageControllerApi {
      * @return
      */
     @ApiOperation("更新页面")
-    public CmsPageResult edit(String id, CmsPage cmsPage);
+    public CmsResult<CmsPage> edit(String id, CmsPage cmsPage);
 
     /**
      *  根据id删除页面信息

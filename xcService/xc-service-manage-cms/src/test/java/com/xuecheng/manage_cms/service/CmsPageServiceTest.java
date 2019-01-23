@@ -1,7 +1,6 @@
 package com.xuecheng.manage_cms.service;
 
 import com.xuecheng.framework.domain.cms.CmsPage;
-import com.xuecheng.framework.domain.cms.response.CmsPageResult;
 import com.xuecheng.framework.domain.cms.response.CmsResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +27,7 @@ public class CmsPageServiceTest {
         cmsPage.setTemplateId("001");
         cmsPage.setPageWebPath("test");
 
-        CmsPageResult addCmsPage = cmsPageService.add(cmsPage);
+        CmsResult<CmsPage> addCmsPage = cmsPageService.add(cmsPage);
         System.out.println(addCmsPage);
     }
 

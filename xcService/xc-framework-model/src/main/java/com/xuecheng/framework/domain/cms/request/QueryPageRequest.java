@@ -1,6 +1,6 @@
 package com.xuecheng.framework.domain.cms.request;
 
-import com.xuecheng.framework.model.request.RequestData;
+import com.xuecheng.framework.model.pagination.PaginationBaseVo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import lombok.Data;
  */
 
 @Data
-public class QueryPageRequest extends RequestData {
+public class QueryPageRequest extends PaginationBaseVo {
 
     // 站点ID
     @ApiModelProperty("站点ID")

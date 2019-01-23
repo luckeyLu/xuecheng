@@ -24,12 +24,21 @@ public class ResponseResult implements Response {
     //提示信息
     String message;
 
+    /**
+     *  构造函数
+     * @param resultCode
+     */
     public ResponseResult(ResultCode resultCode){
         this.success = resultCode.success();
         this.code = resultCode.code();
         this.message = resultCode.message();
     }
 
+    /**
+     * 构造函数
+     * @param resultCode
+     * @param mes
+     */
     public ResponseResult(ResultCode resultCode, String mes){
         this.success = resultCode.success();
         this.code = resultCode.code();

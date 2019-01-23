@@ -43,7 +43,7 @@ public class ExceptionCatch {
     @ExceptionHandler
     @ResponseBody
     public ResponseResult catchCustomException(CustomException e){
-        LOGGER.error("catch exception : {}\r\nexception: ",e.getMessage(),e);
+        LOGGER.error("catch CustomException : {}\r\nexception: ",e.getMessage(),e);
         ResultCode resultCode = e.getResultCode();
         String msg = e.getMsg();
         if (!StringUtils.isEmpty(msg)){
