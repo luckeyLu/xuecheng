@@ -14,6 +14,7 @@ import com.xuecheng.framework.domain.cms.template.CmsHandleCallback;
 import com.xuecheng.framework.exception.CustomException;
 import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.framework.model.response.CommonCode;
+import com.xuecheng.manage_cms.config.RabbitmqConfig;
 import com.xuecheng.manage_cms.dao.CmsPageRepository;
 import com.xuecheng.manage_cms.dao.CmsTemplateRepository;
 import freemarker.cache.StringTemplateLoader;
@@ -21,8 +22,10 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -31,11 +34,14 @@ import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -46,6 +52,8 @@ import java.util.Optional;
 @Service
 public class CmsPageService {
     private static final Logger LOGGER = LoggerFactory.getLogger(CmsPageService.class);
+
+    private static final String PAGE_ID = "pageId";
 
     @Autowired
     private CmsPageRepository cmsPageRepository;
@@ -61,6 +69,9 @@ public class CmsPageService {
 
     @Autowired
     private GridFSBucket gridFSBucket;
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
 
     /**
      *  页面分页查询
@@ -249,7 +260,7 @@ public class CmsPageService {
      * @return
      */
     public CmsResult del(String id){
-        return CmsExecuteTemplate.execute(new CmsHandleCallback<CmsResult>() {
+        return CmsExecuteTemplate.execute(new CmsHandleCallback<CmsResult<Void>>() {
             @Override
             public void checkParams() {
                 // 1. 参数校验
@@ -259,7 +270,7 @@ public class CmsPageService {
             }
 
             @Override
-            public CmsResult doProcess() {
+            public CmsResult<Void> doProcess() {
                 CmsResult<CmsPage> result = findById(id);
                 if (!result.isSuccess()||result.getResultData()==null){
                     throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
@@ -306,6 +317,91 @@ public class CmsPageService {
                 return new CmsResult<String>(CommonCode.SUCCESS, html);
             }
         });
+    }
+
+    /**
+     *  根据pageId发布页面到
+     * @param pageId
+     * @return
+     */
+    @Transactional
+    public CmsResult<Void> postPage(String pageId){
+        return CmsExecuteTemplate.execute(new CmsHandleCallback<CmsResult<Void>>() {
+            @Override
+            public void checkParams() {
+                // 校验入参
+                if (StringUtils.isEmpty(pageId)){
+                    throw new CustomException(CommonCode.INVALIDPARAM, "入参为空！");
+                }
+            }
+
+            @Override
+            public CmsResult<Void> doProcess() {
+                Optional<CmsPage> optional = cmsPageRepository.findById(pageId);
+                if (!optional.isPresent() || optional.get()==null || StringUtils.isEmpty(optional.get().getSiteId())){
+                    throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS,"页面不存在或没有找到搜索站点！");
+                }
+                CmsPage cmsPage = optional.get();
+                if (StringUtils.isEmpty(cmsPage.getPageName())){
+                    cmsPage.setPageName(pageId+".html");
+                }
+                // 执行页面静态化
+                CmsResult<String> pageHtmlResult = getPageHtml(pageId);
+                if (!pageHtmlResult.isSuccess()||pageHtmlResult.getResultData()==null){
+                    throw new CustomException(CmsCode.CMS_PAGE_FREEMAEKRERROR);
+                }
+                // 将静态化文件页面保存到GridFs
+                savaPageHtmlToGridFs(cmsPage, pageHtmlResult.getResultData());
+                // 向消息中间件发送消息
+                sendPostPage(cmsPage);
+
+                return CmsResult.newSuccessResult();
+            }
+        });
+    }
+
+    /**
+     * 向RabbitMq发送消息
+     * @param cmsPage
+     */
+    private void sendPostPage(CmsPage cmsPage){
+
+        try {
+            // 构造消息格式
+            Map<String, String> msgMap = new HashMap<>();
+            msgMap.put(PAGE_ID,cmsPage.getPageId());
+            String msgJson = JSON.toJSONString(msgMap);
+
+            // 发送消息
+            rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,cmsPage.getSiteId(), msgJson);
+
+            LOGGER.info("RabbitMq sending messages success,pageId = {}, msg = {}", cmsPage.getPageId(), msgJson);
+        }catch (Exception e){
+            LOGGER.error("RabbitMq sending messages fail, pageId = {}", cmsPage.getPageId());
+            throw new CustomException(CmsCode.CMS_PAGE_RABBITMQ_SENGMSSGFAIL);
+        }
+    }
+
+    /**
+     *  将页面静态化文件存到GridFs
+     * @param cmsPage
+     * @param pageHtml
+     * @return
+     */
+    private CmsPage savaPageHtmlToGridFs(CmsPage cmsPage, String pageHtml){
+
+        ObjectId objectId = null;
+        try {
+            // 将pageHtml转化为输入流
+            InputStream inputStream = IOUtils.toInputStream(pageHtml, "utf-8");
+            objectId = gridFsTemplate.store(inputStream, cmsPage.getPageName());
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new CustomException(CmsCode.CMS_GENERATEHTML_SAVEHTMLERROR);
+        }
+        cmsPage.setHtmlFileId(objectId.toHexString());
+        CmsPage save = cmsPageRepository.save(cmsPage);
+        return save;
     }
 
     /**
@@ -411,5 +507,9 @@ public class CmsPageService {
 
     public void setGridFSBucket(GridFSBucket gridFSBucket) {
         this.gridFSBucket = gridFSBucket;
+    }
+
+    public void setRabbitTemplate(RabbitTemplate rabbitTemplate) {
+        this.rabbitTemplate = rabbitTemplate;
     }
 }

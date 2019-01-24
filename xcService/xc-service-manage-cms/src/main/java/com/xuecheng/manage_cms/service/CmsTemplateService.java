@@ -1,9 +1,8 @@
 package com.xuecheng.manage_cms.service;
 
 import com.xuecheng.framework.domain.cms.CmsTemplate;
-import com.xuecheng.framework.model.response.CommonCode;
-import com.xuecheng.framework.model.response.QueryResponseResult;
-import com.xuecheng.framework.model.response.QueryResult;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.manage_cms.dao.CmsTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,13 +22,14 @@ public class CmsTemplateService {
      *  查询全部页面模板信息
      * @return
      */
-    public QueryResponseResult findAll(){
+    public CmsResult<PaginationVo<CmsTemplate>> findAll(){
         List<CmsTemplate> all = cmsTemplateRepository.findAll();
 
-        QueryResult<CmsTemplate> queryResult = new QueryResult();
-        queryResult.setTotal(all.size());
-        queryResult.setList(all);
-        return new QueryResponseResult(CommonCode.SUCCESS, queryResult);
+        PaginationVo<CmsTemplate> paginationVo = new PaginationVo<>();
+        paginationVo.setElements(all);
+        paginationVo.setTotalRecords(all.size());
+
+        return CmsResult.newSuccessResult(paginationVo);
     }
 
 

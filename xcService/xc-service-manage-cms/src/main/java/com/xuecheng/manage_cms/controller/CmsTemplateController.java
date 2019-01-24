@@ -1,7 +1,9 @@
 package com.xuecheng.manage_cms.controller;
 
 import com.xuecheng.api.cms.CmsTemplateControllerApi;
-import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.domain.cms.CmsTemplate;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.manage_cms.service.CmsTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +21,7 @@ public class CmsTemplateController implements CmsTemplateControllerApi {
 
     @Override
     @RequestMapping("/all")
-    public QueryResponseResult findAll() {
+    public CmsResult<PaginationVo<CmsTemplate>> findAll() {
         return cmsTemplateService.findAll();
     }
 }

@@ -4,7 +4,6 @@ import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.request.QueryPageRequest;
 import com.xuecheng.framework.domain.cms.response.CmsResult;
 import com.xuecheng.framework.model.pagination.PaginationVo;
-import com.xuecheng.framework.model.response.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -17,8 +16,7 @@ import io.swagger.annotations.ApiOperation;
 public interface CmsPageControllerApi {
 
     /**
-     *   页面查询
-     *
+     *   页面查询带分页
      * @param page
      * @param size
      * @param queryPageRequest
@@ -58,5 +56,13 @@ public interface CmsPageControllerApi {
      * @param id
      * @return
      */
-    public ResponseResult del(String id);
+    public CmsResult<Void> del(String id);
+
+    /**
+     *  根据pageId发布页面
+     * @param pageId
+     * @return
+     */
+    public CmsResult<Void> postPage(String pageId);
+
 }

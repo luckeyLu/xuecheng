@@ -19,7 +19,8 @@ public enum CmsCode implements ResultCode {
     CMS_GETTEMPALE_IOEXCEPTION(false, 24010, "获取页面模板出错！"),
     CMS_PAGE_FREEMAEKRERROR(false, 24011,"页面静态化出错！"),
     CMS_PAGE_SITE_NOTEXISTS(false, 24012,"找不到页面所属站点！"),
-    CMS_PARAM_ILLEGAL(false, 24009, "参数非法！");
+    CMS_PARAM_ILLEGAL(false, 24009, "参数非法！"),
+    CMS_PAGE_RABBITMQ_SENGMSSGFAIL(false,24013,"RabbitMq 发送消息失败！");
     //操作代码
     boolean success;
     //操作代码

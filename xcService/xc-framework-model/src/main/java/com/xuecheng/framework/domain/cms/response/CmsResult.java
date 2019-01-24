@@ -33,11 +33,11 @@ public class CmsResult<T> extends ResponseResult {
         return new CmsResult(CommonCode.SUCCESS);
     }
 
-    public static CmsResult newSuccessResult(Object obj){
+    public static<T> CmsResult newSuccessResult(T obj){
         return new CmsResult(CommonCode.SUCCESS, obj);
     }
 
-    public static CmsResult newFailResult(Object obj){
+    public static<T> CmsResult newFailResult(T obj){
         return new CmsResult(CommonCode.FAIL, obj);
     }
 

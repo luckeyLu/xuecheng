@@ -43,9 +43,13 @@ public class ExceptionCatch {
     @ExceptionHandler
     @ResponseBody
     public ResponseResult catchCustomException(CustomException e){
-        LOGGER.error("catch CustomException : {}\r\nexception: ",e.getMessage(),e);
-        ResultCode resultCode = e.getResultCode();
         String msg = e.getMsg();
+        if (StringUtils.isEmpty(msg)){
+            LOGGER.error("catch CustomException : {}\r\nexception: ",e.getResultCode().message(),e);
+        }else {
+            LOGGER.error("catch CustomException : {}\r\nexception: ",e.getResultCode().message()+msg,e);
+        }
+        ResultCode resultCode = e.getResultCode();
         if (!StringUtils.isEmpty(msg)){
             return new ResponseResult(resultCode, msg);
         }

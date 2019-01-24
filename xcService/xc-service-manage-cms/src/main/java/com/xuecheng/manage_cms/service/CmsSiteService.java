@@ -1,9 +1,8 @@
 package com.xuecheng.manage_cms.service;
 
 import com.xuecheng.framework.domain.cms.CmsSite;
-import com.xuecheng.framework.model.response.CommonCode;
-import com.xuecheng.framework.model.response.QueryResponseResult;
-import com.xuecheng.framework.model.response.QueryResult;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.manage_cms.dao.CmsSiteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,13 +18,14 @@ public class CmsSiteService {
     @Autowired
     private CmsSiteRepository cmsSiteRepository;
 
-    public QueryResponseResult findAll(){
+    public CmsResult<PaginationVo<CmsSite>> findAll(){
         List<CmsSite> all = cmsSiteRepository.findAll();
 
-        QueryResult<CmsSite> queryResult = new  QueryResult();
-        queryResult.setTotal(all.size());
-        queryResult.setList(all);
-        return new QueryResponseResult(CommonCode.SUCCESS, queryResult);
+        PaginationVo<CmsSite> paginationVo = new PaginationVo<>();
+        paginationVo.setElements(all);
+        paginationVo.setTotalRecords(all.size());
+
+        return CmsResult.newSuccessResult(paginationVo);
     }
 
 

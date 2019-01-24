@@ -6,6 +6,9 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.CmsSite;
 import com.xuecheng.framework.domain.cms.response.CmsCode;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.domain.cms.template.CmsExecuteTemplate;
+import com.xuecheng.framework.domain.cms.template.CmsHandleCallback;
 import com.xuecheng.framework.exception.CustomException;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.manage_cms_client.dao.CmsPageRepository;
@@ -21,7 +24,10 @@ import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
 
 /**
@@ -44,53 +50,66 @@ public class PageService {
     private GridFsTemplate gridFsTemplate;
 
     // 将页面html保存到服务器页面物理路径下
-    public void savePageToServerPath(String pageId){
-        // 校验入参
-        if (StringUtils.isEmpty(pageId)){
-            throw new CustomException(CommonCode.INVALIDPARAM, "入参为空！");
-        }
-        Optional<CmsPage> pageResult = cmsPageRepository.findById(pageId);
-        if (!pageResult.isPresent()||pageResult.get()==null){
-            throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
-        }
-        // 页面详情
-        CmsPage cmsPage = pageResult.get();
-        if (StringUtils.isEmpty(cmsPage.getHtmlFileId())){
-            throw new CustomException(CommonCode.INVALIDPARAM, "页面HtmlFileId为空！");
-        }
-        // 根据页面fileId查询到gridfs上查询页面的html文件
-        InputStream inputStream = queryPageHtmlByFileId(cmsPage.getHtmlFileId());
-        if (inputStream == null){
-            LOGGER.error("根据页面HtmlFIleId查询页面Html文件出错，HtmlFileId：{}", cmsPage.getHtmlFileId());
-        }
-        // 页面所属站点
-        CmsSite cmsSite = queryCmsSitById(cmsPage.getSiteId());
-        if (cmsSite == null){
-            throw new CustomException(CmsCode.CMS_PAGE_SITE_NOTEXISTS);
-        }
-        // 页面物理路径 = 站点物理路径+页面物理路径+页面名称
-        String pageHtml = cmsSite.getSitePhysicalPath()+cmsPage.getPagePhysicalPath()+cmsPage.getPageName();
+    public CmsResult<Void> savePageToServerPath(String pageId){
+        return CmsExecuteTemplate.execute(new CmsHandleCallback<CmsResult<Void>>() {
+            @Override
+            public void checkParams() {
+                // 校验入参
+                if (StringUtils.isEmpty(pageId)){
+                    throw new CustomException(CommonCode.INVALIDPARAM, "入参为空！");
+                }
+            }
 
-        // 将页面html文件写入服务器物理地址
-        FileOutputStream fileOutputStream = null;
-        try {
-            fileOutputStream  = new FileOutputStream(new File(pageHtml));
-            IOUtils.copy(inputStream, fileOutputStream);
-        }catch (IOException e) {
-            e.printStackTrace();
-            LOGGER.error("将页面文件写入服务器物理路径失败！pageId:{},", pageId);
-        }finally {
-            try {
-                inputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+            @Override
+            public CmsResult<Void> doProcess() {
+
+                Optional<CmsPage> pageResult = cmsPageRepository.findById(pageId);
+                if (!pageResult.isPresent()||pageResult.get()==null){
+                    throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
+                }
+                // 页面详情
+                CmsPage cmsPage = pageResult.get();
+                if (StringUtils.isEmpty(cmsPage.getHtmlFileId())){
+                    throw new CustomException(CommonCode.INVALIDPARAM, "页面HtmlFileId为空！");
+                }
+                // 根据页面fileId查询到gridfs上查询页面的html文件
+                InputStream inputStream = queryPageHtmlByFileId(cmsPage.getHtmlFileId());
+                if (inputStream == null){
+                    LOGGER.error("根据页面HtmlFIleId查询页面Html文件出错，HtmlFileId：{}", cmsPage.getHtmlFileId());
+                }
+                // 页面所属站点
+                CmsSite cmsSite = queryCmsSitById(cmsPage.getSiteId());
+                if (cmsSite == null){
+                    throw new CustomException(CmsCode.CMS_PAGE_SITE_NOTEXISTS);
+                }
+                // 页面物理路径 = 站点物理路径+页面物理路径+页面名称
+                String pageHtml = cmsSite.getSitePhysicalPath()+cmsPage.getPagePhysicalPath()+cmsPage.getPageName();
+
+                // 将页面html文件写入服务器物理地址
+                FileOutputStream fileOutputStream = null;
+                try {
+                    fileOutputStream  = new FileOutputStream(new File(pageHtml));
+                    IOUtils.copy(inputStream, fileOutputStream);
+                    return CmsResult.newSuccessResult();
+                }catch (IOException e) {
+                    e.printStackTrace();
+                    LOGGER.error("将页面文件写入服务器物理路径失败！pageId:{},", pageId);
+                    return CmsResult.newFailResult();
+                }finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        fileOutputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
-            try {
-                fileOutputStream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        });
+
     }
 
     /**

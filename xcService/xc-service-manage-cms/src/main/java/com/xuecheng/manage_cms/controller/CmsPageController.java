@@ -44,8 +44,14 @@ public class CmsPageController implements CmsPageControllerApi {
 
     @Override
     @GetMapping("/del/{id}")
-    public CmsResult del(@PathVariable String id) {
+    public CmsResult<Void> del(@PathVariable String id) {
         return cmsPageService.del(id);
+    }
+
+    @Override
+    @GetMapping("/postPage/{id}")
+    public CmsResult<Void> postPage(@PathVariable String id) {
+        return cmsPageService.postPage(id);
     }
 
     public void setCmsPageService(CmsPageService cmsPageService) {

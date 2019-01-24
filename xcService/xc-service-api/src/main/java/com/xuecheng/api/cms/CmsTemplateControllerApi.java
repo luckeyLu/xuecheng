@@ -1,6 +1,8 @@
 package com.xuecheng.api.cms;
 
-import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.domain.cms.CmsTemplate;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.model.pagination.PaginationVo;
 
 /**
  *  页面模板服务接口
@@ -13,5 +15,5 @@ public interface CmsTemplateControllerApi {
      *  查询全部(不分页)
      * @return
      */
-    public QueryResponseResult findAll();
+    public CmsResult<PaginationVo<CmsTemplate>> findAll();
 }

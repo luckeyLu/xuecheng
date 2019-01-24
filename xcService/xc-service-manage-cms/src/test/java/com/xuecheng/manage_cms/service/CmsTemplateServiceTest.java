@@ -1,6 +1,8 @@
 package com.xuecheng.manage_cms.service;
 
-import com.xuecheng.framework.model.response.QueryResponseResult;
+import com.xuecheng.framework.domain.cms.CmsTemplate;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
+import com.xuecheng.framework.model.pagination.PaginationVo;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +21,7 @@ public class CmsTemplateServiceTest {
 
     @Test
     public void findAll(){
-        QueryResponseResult all = cmsTemplateService.findAll();
-        System.out.println(all.getQueryResult().getList());
+        CmsResult<PaginationVo<CmsTemplate>> all = cmsTemplateService.findAll();
+        System.out.println(all);
     }
 }

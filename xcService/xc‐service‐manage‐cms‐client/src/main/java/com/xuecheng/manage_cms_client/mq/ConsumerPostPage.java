@@ -2,6 +2,7 @@ package com.xuecheng.manage_cms_client.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.xuecheng.framework.domain.cms.CmsPage;
+import com.xuecheng.framework.domain.cms.response.CmsResult;
 import com.xuecheng.manage_cms_client.dao.CmsPageRepository;
 import com.xuecheng.manage_cms_client.service.PageService;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +33,7 @@ public class ConsumerPostPage {
 
     @RabbitListener(queues = {"${xuecheng.mq.queue}"})
     public void postPage(String msg){
+        LOGGER.info("receive postpage RabbitMQ msg = {}",msg);
         // 接收mq消息 消息格式为：{"pageId":"xxxx"}
         Map map = JSON.parseObject(msg, Map.class);
         String pageId = (String)map.get(PAGE_ID);
@@ -45,7 +47,7 @@ public class ConsumerPostPage {
             LOGGER.error("query cmsPage by pageId is null,pageId:{}",pageId);
             return;
         }
-        pageService.savePageToServerPath(pageId);
+        CmsResult<Void> result = pageService.savePageToServerPath(pageId);
     }
 
     public void setPageService(PageService pageService) {
