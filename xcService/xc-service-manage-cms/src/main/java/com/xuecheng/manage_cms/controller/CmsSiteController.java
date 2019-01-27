@@ -4,7 +4,6 @@ import com.xuecheng.api.cms.CmsSiteControllerApi;
 import com.xuecheng.framework.domain.cms.CmsSite;
 import com.xuecheng.framework.domain.cms.response.CmsResult;
 import com.xuecheng.framework.model.pagination.PaginationVo;
-import com.xuecheng.framework.model.response.QueryResponseResult;
 import com.xuecheng.manage_cms.service.CmsSiteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

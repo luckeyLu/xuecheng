@@ -24,6 +24,13 @@ public class CmsResult<T> extends ResponseResult {
         this.resultData = resultData;
     }
 
+    /**
+     *  构造函数带自定义信息
+     *
+     * @param resultCode
+     * @param resultData
+     * @param msg
+     */
     public CmsResult(ResultCode resultCode,T resultData, String msg) {
         super(resultCode,msg);
         this.resultData = resultData;

@@ -35,7 +35,7 @@ public class ResponseResult implements Response {
     }
 
     /**
-     * 构造函数
+     * 构造函数带自定义信息
      * @param resultCode
      * @param mes
      */

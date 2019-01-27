@@ -7,8 +7,10 @@ import com.xuecheng.framework.model.response.ResultCode;
  */
 public class CustomException extends RuntimeException {
 
+    //  错误代码
     private ResultCode resultCode;
 
+    // 自定义错误信息
     private String msg;
 
     public CustomException(ResultCode resultCode){

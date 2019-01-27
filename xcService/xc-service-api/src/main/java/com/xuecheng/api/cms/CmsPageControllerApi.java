@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 
 /**
+ *  页面管理接口服务
  * Created by lwenf on 2019-01-01.
  */
 @Api(value="cms页面管理接口",description="cms页面管理接口，提供页面的增、删、改、查")

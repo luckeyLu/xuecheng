@@ -1,6 +1,7 @@
 package com.xuecheng.framework.exception;
 
 import com.google.common.collect.ImmutableMap;
+import com.xuecheng.framework.model.constants.CommonConstants;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.ResponseResult;
 import com.xuecheng.framework.model.response.ResultCode;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @ControllerAdvice
 public class ExceptionCatch {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionCatch.class);
+    private static final Logger COMMON_ERROR_LOGGER = LoggerFactory.getLogger(CommonConstants.COMMON_ERROR_LOGGER);
 
     // 存放费自定义异常类型与错误代码映射，ImmutableMap特点：一点创建不可改变，且线程安全
     private static ImmutableMap<Class<? extends Throwable>, ResultCode> EXCEPTIONS;
@@ -45,9 +46,9 @@ public class ExceptionCatch {
     public ResponseResult catchCustomException(CustomException e){
         String msg = e.getMsg();
         if (StringUtils.isEmpty(msg)){
-            LOGGER.error("catch CustomException : {}\r\nexception: ",e.getResultCode().message(),e);
+            COMMON_ERROR_LOGGER.error("catch CustomException : {}\r\nexception: ",e.getResultCode().message(),e);
         }else {
-            LOGGER.error("catch CustomException : {}\r\nexception: ",e.getResultCode().message()+msg,e);
+            COMMON_ERROR_LOGGER.error("catch CustomException : {}\r\nexception: ",e.getResultCode().message()+msg,e);
         }
         ResultCode resultCode = e.getResultCode();
         if (!StringUtils.isEmpty(msg)){
@@ -64,7 +65,7 @@ public class ExceptionCatch {
     @ExceptionHandler
     @ResponseBody
     public ResponseResult catchException(Exception e){
-        LOGGER.error("catch exception : {}\r\nexception: ",e.getMessage(),e);
+        COMMON_ERROR_LOGGER.error("catch exception : {}\r\nexception: ",e.getMessage(),e);
         if (EXCEPTIONS == null) {
             EXCEPTIONS = builder.build();
         }

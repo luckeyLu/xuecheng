@@ -8,6 +8,8 @@ import com.xuecheng.framework.model.response.ResponseResult;
  */
 public interface CmsHandleCallback<K> {
 
+    public String buildLog();
+
     /**
      *  入参校验
      */

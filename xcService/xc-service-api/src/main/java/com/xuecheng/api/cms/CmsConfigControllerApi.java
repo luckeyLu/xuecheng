@@ -6,7 +6,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 /**
- *  Cmsc配置管理接口服务
+ *  Cmsc配置管理服务接口
  * Created by lwenf on 2019-01-13.
  */
 @Api(value="cms配置管理接口",description="cms配置管理接口，提供查询数据模型的管理接口")
