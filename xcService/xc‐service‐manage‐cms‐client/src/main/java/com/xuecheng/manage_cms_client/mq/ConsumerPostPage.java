@@ -2,8 +2,8 @@ package com.xuecheng.manage_cms_client.mq;
 
 import com.alibaba.fastjson.JSON;
 import com.xuecheng.framework.domain.cms.CmsPage;
-import com.xuecheng.framework.domain.cms.response.CmsResult;
 import com.xuecheng.framework.model.constants.CommonConstants;
+import com.xuecheng.framework.utils.LoggerUtil;
 import com.xuecheng.manage_cms_client.config.RabbitmqConfig;
 import com.xuecheng.manage_cms_client.dao.CmsPageRepository;
 import com.xuecheng.manage_cms_client.service.PageService;
@@ -40,25 +40,26 @@ public class ConsumerPostPage {
 
     @RabbitListener(queues = {"${xuecheng.mq.queue}"})
     public void postPage(String msg){
-        MQ_CONSUMER_LOGGER.info("PageService.savePageToServerPath start consumer mq; [Exchange={},Queue={},routingKey={}, msg={}",
-                RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, RabbitmqConfig.QUEUE_CMS_POSTPAGE, routingKey, msg);
+        LoggerUtil.infoLog(MQ_CONSUMER_LOGGER,"PageService.savePageToServerPath Received; [start]","MQ message", msg,
+                "Exchange",RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, "Queue", RabbitmqConfig.QUEUE_CMS_POSTPAGE, "routingKey", routingKey);
         // 接收mq消息 消息格式为：{"pageId":"xxxx"}
         Map map = JSON.parseObject(msg, Map.class);
         String pageId = (String)map.get(PAGE_ID);
         // 校验接收到的消息
         if (StringUtils.isEmpty(pageId)){
-            MQ_CONSUMER_LOGGER.error("receive postpage msg,cmsPage is null,pageId:{}",pageId);
+            LoggerUtil.warnLog(MQ_CONSUMER_LOGGER, "Receive postpage msg, pageId is empty", "message", msg);
             return;
         }
         Optional<CmsPage> optional = cmsPageRepository.findById(pageId);
         if (!optional.isPresent()||optional.get()==null){
-            MQ_CONSUMER_LOGGER.error("query cmsPage by pageId is null,pageId:{}",pageId);
+            LoggerUtil.warnLog(MQ_CONSUMER_LOGGER, "Query cmsPage by pageId is null", "pageId", pageId);
             return;
         }
-        CmsResult<String> result = pageService.savePageToServerPath(pageId);
+        pageService.savePageToServerPath(optional.get());
 
-        MQ_CONSUMER_LOGGER.info("PageService.savePageToServerPath consumer mq success; [Exchange={},Queue={},routingKey={}, msg={},pageHtml={}]",
-                RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, RabbitmqConfig.QUEUE_CMS_POSTPAGE, routingKey, msg, result.getResultData());
+        LoggerUtil.infoLog(MQ_CONSUMER_LOGGER,"PageService.savePageToServerPath consumer mq; [success]","MQ message", msg,
+                "Exchange",RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, "Queue", RabbitmqConfig.QUEUE_CMS_POSTPAGE, "routingKey", routingKey);
+
     }
 
     public void setPageService(PageService pageService) {

@@ -1,5 +1,6 @@
 package com.xuecheng.manage_cms_client.service;
 
+import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.response.CmsResult;
 
 /**
@@ -10,9 +11,9 @@ public interface PageService {
 
     /**
      *  将页面html保存到服务器页面物理路径下
-     * @param pageId
+     * @param cmsPage
      * @return
      */
-    public CmsResult<String> savePageToServerPath(String pageId);
+    public CmsResult<String> savePageToServerPath(CmsPage cmsPage);
 
 }

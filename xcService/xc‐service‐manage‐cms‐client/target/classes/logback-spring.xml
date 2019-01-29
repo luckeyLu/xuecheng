@@ -80,10 +80,12 @@
 
     <!-- #################################################################################################### -->
     <!-- 公共错误日志logger -->
-<!--    <logger name="COMMON_ERROR_LOGGER" additivity="false">
+<!--
+    <logger name="COMMON_ERROR_LOGGER" additivity="false">
         <level value="info"/>
         <appender-ref ref="ERROR_APPENDER"/>
-    </logger>-->
+    </logger>
+-->
 
     <!-- 公共信息日志logger -->
 <!--    <logger name="CMS_CLIENT_EXCUTE_LOGGER" additivity="false">

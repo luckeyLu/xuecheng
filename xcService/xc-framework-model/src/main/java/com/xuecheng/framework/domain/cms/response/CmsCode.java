@@ -33,6 +33,8 @@ public enum CmsCode implements ResultCode {
 
     CMS_PAGE_SITE_NOTEXISTS(false, 24012,"找不到页面所属站点！"),
 
+    CMS_PAGE_IOEXCEPTION(false, 2414, "文件写入磁盘失败！"),
+
     CMS_PAGE_RABBITMQ_SENGMSSGFAIL(false,24013,"RabbitMq 消息发送失败！");
 
     //操作代码

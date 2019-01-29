@@ -1,12 +1,8 @@
 package com.xuecheng.framework.utils;
 
 
-import com.xuecheng.framework.model.constants.CommonConstants;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static javax.swing.UIManager.getString;
 
 /**
  *  日志工具类
@@ -14,21 +10,85 @@ import static javax.swing.UIManager.getString;
  * Created by lwenf on 2019-01-25.
  */
 public class LoggerUtil {
-    private static final Logger COMMON_ERROR_LOGGER = LoggerFactory.getLogger(CommonConstants.COMMON_ERROR_LOGGER);
 
-    public static void buildInfoLog(Logger logger, String msg){
-        logger.info(msg);
+    /**
+     *  info日志
+     * @param logger
+     * @param message
+     */
+    public static void infoLog(Logger logger, String message){
+        if (logger.isInfoEnabled()){
+            logger.info(getBizNo()+","+message);
+        }
     }
 
-    public static void buildError(Logger logger, String msg){
-        logger.error(msg);
+    /**
+     *  info日志带信息
+     * @param logger
+     * @param message
+     * @param strings
+     */
+    public static void infoLog(Logger logger, String message, Object... strings){
+        if (logger.isInfoEnabled()){
+            logger.info(getBizNo()+","+message + buildParamPairString(strings));
+        }
     }
 
-    public static void buildErrorLog(Logger logger, String msg){
-        logger.error(msg);
-        COMMON_ERROR_LOGGER.error(msg);
+    /**
+     *  告警日志
+     * @param logger
+     * @param message
+     */
+    public static void warnLog(Logger logger, String message){
+        logger.warn(getBizNo()+","+message);
     }
 
+    /**
+     *  告警日志细信息
+     * @param logger
+     * @param message
+     * @param strings
+     */
+    public static void warnLog(Logger logger, String message, Object... strings){
+        logger.warn(getBizNo()+","+message + buildParamPairString(strings));
+    }
+
+    /**
+     * 错误日志
+     * @param logger
+     * @param message
+     */
+    public static void errorLog(Logger logger, String message){
+        logger.error(getBizNo()+","+message);
+    }
+
+    /**
+     *  错误日志细信息
+     * @param logger
+     * @param message
+     * @param strings
+     */
+    public static void errorLog(Logger logger, String message, Object... strings){
+        logger.error(getBizNo()+","+message + buildParamPairString(strings));
+    }
+
+    /**
+     *  错误日志带信息&&错误详细
+     * @param logger
+     * @param t
+     * @param message
+     * @param strings
+     */
+    public static void errorLog(Logger logger,Throwable t, String message, Object... strings){
+        logger.error(getBizNo()+","+message + buildParamPairString(strings), t);
+    }
+
+    /**
+     *  构建参数 日志结果：[类名.方法名](参数名=参数值，参数名=参数值...)
+     * @param methodName
+     * @param strings
+     * @return
+     */
     public static String buildParaLog(String methodName, Object... strings) {
 
         StringBuilder builder = new StringBuilder();
@@ -47,14 +107,30 @@ public class LoggerUtil {
         if (strings != null && strings.length >= 2) {
             builder.append("(");
             for (int i = 0; i < (strings.length >> 1); i++) {
-                builder.append(getString(strings[i << 1]));
+                if (strings[i << 1] != null){
+                    builder.append((strings[i << 1]).toString());
+                }else {
+                    builder.append(" ");
+                }
                 builder.append("=");
-                builder.append(getString(strings[(i << 1) + 1]));
+                if (strings[(i << 1) + 1] != null){
+                    builder.append((strings[(i << 1) + 1]).toString());
+                }else {
+                    builder.append(" ");
+                }
                 builder.append(",");
             }
             builder.deleteCharAt(builder.length() - 1);
             builder.append(")");
         }
         return builder.toString();
+    }
+
+    /**
+     *  获得本地线程上下文业务流水号，做为全局唯一id
+     * @return
+     */
+    public static String getBizNo(){
+        return ThreadLocalUtil.getBizNo();
     }
 }

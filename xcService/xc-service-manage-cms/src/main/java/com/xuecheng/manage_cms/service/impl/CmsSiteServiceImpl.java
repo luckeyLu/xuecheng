@@ -6,7 +6,7 @@ import com.xuecheng.framework.domain.cms.template.CmsExecuteTemplate;
 import com.xuecheng.framework.domain.cms.template.CmsHandleCallback;
 import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.framework.utils.LoggerUtil;
-import com.xuecheng.manage_cms.dao.CmsSiteRepository;
+import com.xuecheng.manage_cms.repository.CmsSitRepository;
 import com.xuecheng.manage_cms.service.CmsSiteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ import java.util.List;
 public class CmsSiteServiceImpl implements CmsSiteService {
 
     @Autowired
-    private CmsSiteRepository cmsSiteRepository;
+    private CmsSitRepository cmsSiteRepository;
 
     public CmsResult<PaginationVo<CmsSite>> findAll(){
         return CmsExecuteTemplate.execute(new CmsHandleCallback<CmsResult<PaginationVo<CmsSite>>>() {
@@ -38,7 +38,7 @@ public class CmsSiteServiceImpl implements CmsSiteService {
             @Override
             public CmsResult<PaginationVo<CmsSite>> doProcess() {
 
-                List<CmsSite> all = cmsSiteRepository.findAll();
+                List<CmsSite> all = cmsSiteRepository.queryAll();
 
                 PaginationVo<CmsSite> paginationVo = new PaginationVo<>();
                 paginationVo.setElements(all);
@@ -49,7 +49,7 @@ public class CmsSiteServiceImpl implements CmsSiteService {
         });
     }
 
-    public void setCmsSiteRepository(CmsSiteRepository cmsSiteRepository) {
+    public void setCmsSiteRepository(CmsSitRepository cmsSiteRepository) {
         this.cmsSiteRepository = cmsSiteRepository;
     }
 }

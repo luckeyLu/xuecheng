@@ -6,7 +6,7 @@ import com.xuecheng.framework.domain.cms.template.CmsExecuteTemplate;
 import com.xuecheng.framework.domain.cms.template.CmsHandleCallback;
 import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.framework.utils.LoggerUtil;
-import com.xuecheng.manage_cms.dao.CmsTemplateRepository;
+import com.xuecheng.manage_cms.repository.CmsTemplateRepository;
 import com.xuecheng.manage_cms.service.CmsTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -41,7 +41,7 @@ public class CmsTemplateServiceImpl implements CmsTemplateService {
 
             @Override
             public CmsResult<PaginationVo<CmsTemplate>> doProcess() {
-                List<CmsTemplate> all = cmsTemplateRepository.findAll();
+                List<CmsTemplate> all = cmsTemplateRepository.queryAll();
 
                 PaginationVo<CmsTemplate> paginationVo = new PaginationVo<>();
                 paginationVo.setElements(all);

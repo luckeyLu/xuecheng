@@ -17,8 +17,8 @@ import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.utils.LoggerUtil;
 import com.xuecheng.manage_cms.config.RabbitmqConfig;
-import com.xuecheng.manage_cms.dao.CmsPageRepository;
-import com.xuecheng.manage_cms.dao.CmsTemplateRepository;
+import com.xuecheng.manage_cms.repository.CmsPageRepository;
+import com.xuecheng.manage_cms.repository.CmsTemplateRepository;
 import com.xuecheng.manage_cms.service.CmsPageService;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  *  cms页面管理接口实现类
@@ -93,15 +92,16 @@ public class CmsPageServiceImpl implements CmsPageService {
 
             @Override
             public void checkParams() {
+
+                if (queryPageRequest == null){
+                    queryPageRequest.setCurrentPage(1);
+                    queryPageRequest.setPageSize(10);
+                }
                 if (page > 0 ){
                     queryPageRequest.setCurrentPage(page);
                 }
                 if (size > 0){
                     queryPageRequest.setPageSize(size);
-                }
-                if (queryPageRequest == null){
-                    queryPageRequest.setCurrentPage(1);
-                    queryPageRequest.setPageSize(10);
                 }
             }
             @Override
@@ -132,7 +132,7 @@ public class CmsPageServiceImpl implements CmsPageService {
 
                 Example<CmsPage> example = Example.of(cmsPage, exampleMatcher);
                 Pageable pageable = PageRequest.of(queryPageRequest.getCurrentPage()-1,queryPageRequest.getPageSize());
-                Page<CmsPage> all = cmsPageRepository.findAll(example,pageable);
+                Page<CmsPage> all = cmsPageRepository.queryByPagination(example,pageable);
 
                 if (all == null){
                     return CmsResult.newFailResult("查询出错！");
@@ -171,13 +171,13 @@ public class CmsPageServiceImpl implements CmsPageService {
             }
             @Override
             public CmsResult<CmsPage> doProcess() {
-                CmsPage resultCmsPage = cmsPageRepository.findByPageNameAndPageWebPathAndSiteId(cmsPage.getPageName(), cmsPage.getPageWebPath(), cmsPage.getSiteId());
+                CmsPage resultCmsPage = cmsPageRepository.queryByPageNameAndPageWebPathAndSiteId(cmsPage.getPageName(), cmsPage.getPageWebPath(), cmsPage.getSiteId());
                 if (resultCmsPage != null){
                     throw new CustomException(CmsCode.CMS_ADDPAGE_EXISTSNAME);
                 }
                 cmsPage.setPageId(null);
-                CmsPage save = cmsPageRepository.save(cmsPage);
-                return CmsResult.newSuccessResult(cmsPage);
+                CmsPage save = cmsPageRepository.innerOrUpdate(cmsPage);
+                return CmsResult.newSuccessResult(save);
             }
         });
     }
@@ -203,11 +203,11 @@ public class CmsPageServiceImpl implements CmsPageService {
             @Override
             public CmsResult<CmsPage> doProcess() {
 
-                Optional<CmsPage> optional = cmsPageRepository.findById(id);
-                if (!optional.isPresent()){
+                CmsPage cmsPage = cmsPageRepository.queryById(id);
+                if (cmsPage == null){
                     return CmsResult.newFailResult("查询结果为空！");
                 }
-                return CmsResult.newSuccessResult(optional.get());
+                return CmsResult.newSuccessResult(cmsPage);
             }
         });
     }
@@ -239,15 +239,14 @@ public class CmsPageServiceImpl implements CmsPageService {
                 if(!StringUtils.isEmpty(cmsPage.getPageId())&&!StringUtils.equals(id, cmsPage.getPageId())){
                     throw new CustomException(CommonCode.INVALIDPARAM, "页面主键有误！");
                 }
-                CmsResult<CmsPage> result = findById(id);
-                if (!result.isSuccess()||result.getResultData()==null){
+                CmsPage one = cmsPageRepository.queryById(id);
+                if (one == null){
                     throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
                 }
 
                 /**
                  * 更新操作
                  */
-                CmsPage one = result.getResultData();
                 //更新模板id
                 one.setTemplateId(cmsPage.getTemplateId());
                 //更新所属站点
@@ -267,7 +266,7 @@ public class CmsPageServiceImpl implements CmsPageService {
                 // 更新数据类型
                 one.setPageType(cmsPage.getPageType());
 
-                CmsPage save = cmsPageRepository.save(one);
+                CmsPage save = cmsPageRepository.innerOrUpdate(one);
                 if (save == null){
                     return CmsResult.newFailResult("更新页面失败！");
                 }
@@ -297,11 +296,11 @@ public class CmsPageServiceImpl implements CmsPageService {
 
             @Override
             public CmsResult<Void> doProcess() {
-                CmsResult<CmsPage> result = findById(id);
-                if (!result.isSuccess()||result.getResultData()==null){
+                CmsPage cmsPage = cmsPageRepository.queryById(id);
+                if (cmsPage == null){
                     throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
                 }
-                cmsPageRepository.deleteById(id);
+                cmsPageRepository.delByPageId(id);
                 return CmsResult.newSuccessResult();
             }
         });
@@ -330,9 +329,8 @@ public class CmsPageServiceImpl implements CmsPageService {
 
             @Override
             public CmsResult<String> doProcess() {
-                CmsResult<CmsPage> pageResult = findById(pageId);
-                CmsPage cmsPage = pageResult.getResultData();
-                if (!pageResult.isSuccess()||cmsPage==null){
+                CmsPage cmsPage = cmsPageRepository.queryById(pageId);
+                if (cmsPage == null){
                     throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
                 }
                 // 1.获得页面模型数据
@@ -373,11 +371,10 @@ public class CmsPageServiceImpl implements CmsPageService {
 
             @Override
             public CmsResult<Void> doProcess() {
-                Optional<CmsPage> optional = cmsPageRepository.findById(pageId);
-                if (!optional.isPresent() || optional.get()==null || StringUtils.isEmpty(optional.get().getSiteId())){
+                CmsPage cmsPage = cmsPageRepository.queryById(pageId);
+                if (cmsPage == null || StringUtils.isEmpty(cmsPage.getSiteId())){
                     throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS,"页面不存在或没有找到搜索站点！");
                 }
-                CmsPage cmsPage = optional.get();
                 if (StringUtils.isEmpty(cmsPage.getPageName())){
                     cmsPage.setPageName(pageId+".html");
                 }
@@ -410,11 +407,11 @@ public class CmsPageServiceImpl implements CmsPageService {
             // 发送消息
             rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,cmsPage.getSiteId(), msgJson);
 
-            LoggerUtil.buildInfoLog(MQ_PRODUER_LOGGER,
-                    "RabbitMq sending messages success; [Exchange = "+RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE+"pageId = "+cmsPage.getPageId()+", msg = "+msgJson+"]");
+            LoggerUtil.infoLog(MQ_PRODUER_LOGGER,
+                    "RabbitMq sending messages success;","Exchange",RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, "MQ Message",msgJson );
         }catch (Exception e){
-            LoggerUtil.buildErrorLog(MQ_PRODUER_LOGGER,
-                    "RabbitMq sending messages fail; [Exchange = "+RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE+"pageId = "+cmsPage.getPageId()+", msg = "+msgJson);
+            LoggerUtil.errorLog(MQ_PRODUER_LOGGER, e,
+                    "RabbitMq sending messages fail;", "Exchange",RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, "MQ Message",msgJson);
             throw new CustomException(CmsCode.CMS_PAGE_RABBITMQ_SENGMSSGFAIL);
         }
     }
@@ -437,7 +434,7 @@ public class CmsPageServiceImpl implements CmsPageService {
             throw new CustomException(CmsCode.CMS_GENERATEHTML_SAVEHTMLERROR);
         }
         cmsPage.setHtmlFileId(objectId.toHexString());
-        CmsPage save = cmsPageRepository.save(cmsPage);
+        CmsPage save = cmsPageRepository.innerOrUpdate(cmsPage);
         return save;
     }
 
@@ -480,11 +477,10 @@ public class CmsPageServiceImpl implements CmsPageService {
         if (StringUtils.isEmpty(templateId)){
             throw new CustomException(CmsCode.CMS_GENERATEHTML_TEMPLATEISNULL);
         }
-        Optional<CmsTemplate> optional = cmsTemplateRepository.findById(templateId);
-        if (!optional.isPresent() && StringUtils.isEmpty(optional.get().getTemplateFileId())){
+        CmsTemplate cmsTemplate = cmsTemplateRepository.queryById(templateId);
+        if (cmsTemplate == null && StringUtils.isEmpty(cmsTemplate.getTemplateFileId())){
             throw new CustomException(CmsCode.CMS_GENERATEHTML_TEMPLATEISNULL);
         }
-        CmsTemplate cmsTemplate = optional.get();
         // 获取模板文件内容
         GridFSFile gridFSFile = gridFsTemplate.findOne(Query.query(Criteria.where("_id").is(cmsTemplate.getTemplateFileId())));
         // 打开下载对象流

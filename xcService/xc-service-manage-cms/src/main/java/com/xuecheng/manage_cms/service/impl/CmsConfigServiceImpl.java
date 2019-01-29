@@ -7,13 +7,11 @@ import com.xuecheng.framework.domain.cms.template.CmsHandleCallback;
 import com.xuecheng.framework.exception.CustomException;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.utils.LoggerUtil;
-import com.xuecheng.manage_cms.dao.CmsConfigRepository;
+import com.xuecheng.manage_cms.repository.CmsConfigRepository;
 import com.xuecheng.manage_cms.service.CmsConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.util.Optional;
 
 /**
  *  Cmsc配置管理接口实现类
@@ -43,12 +41,11 @@ public class CmsConfigServiceImpl implements CmsConfigService {
             @Override
             public CmsResult<CmsConfig> doProcess() {
 
-                Optional<CmsConfig> optional = cmsConfigRepository.findById(id);
+                CmsConfig cmsConfig = cmsConfigRepository.queryById(id);
                 // 查询结果为空
-                if (!optional.isPresent()) {
+                if (cmsConfig == null) {
                     return CmsResult.newFailResult("查询结果为空！");
                 }
-                CmsConfig cmsConfig = optional.get();
                 return CmsResult.newSuccessResult(cmsConfig);
             }
         });

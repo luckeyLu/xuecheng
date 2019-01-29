@@ -7,13 +7,10 @@ import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.domain.cms.CmsSite;
 import com.xuecheng.framework.domain.cms.response.CmsCode;
 import com.xuecheng.framework.domain.cms.response.CmsResult;
-import com.xuecheng.framework.domain.cms.template.CmsExecuteTemplate;
-import com.xuecheng.framework.domain.cms.template.CmsHandleCallback;
 import com.xuecheng.framework.exception.CustomException;
 import com.xuecheng.framework.model.constants.CommonConstants;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.utils.LoggerUtil;
-import com.xuecheng.manage_cms_client.dao.CmsPageRepository;
 import com.xuecheng.manage_cms_client.dao.CmsSiteRepository;
 import com.xuecheng.manage_cms_client.service.PageService;
 import org.apache.commons.io.IOUtils;
@@ -39,11 +36,7 @@ import java.util.Optional;
  */
 @Service
 public class PageServiceImpl implements PageService {
-
     private static  final Logger MQ_CONSUMER_LOGGER = LoggerFactory.getLogger(CommonConstants.MQ_CONSUMER_LOGGER);
-
-    @Autowired
-    private CmsPageRepository cmsPageRepository;
 
     @Autowired
     private CmsSiteRepository cmsSiteRepository;
@@ -56,74 +49,50 @@ public class PageServiceImpl implements PageService {
 
     /**
      *  将页面html保存到服务器页面物理路径下
-     * @param pageId
+     * @param cmsPage
      * @return
      */
-    public CmsResult<String> savePageToServerPath(String pageId){
-        return CmsExecuteTemplate.execute(new CmsHandleCallback<CmsResult<String>>() {
-            @Override
-            public String buildLog() {
-                return LoggerUtil.buildParaLog("PageService.savePageToServerPath", "pageId", pageId);
-            }
+    public CmsResult<String> savePageToServerPath(CmsPage cmsPage){
 
-            @Override
-            public void checkParams() {
-                // 校验入参
-                if (StringUtils.isEmpty(pageId)){
-                    throw new CustomException(CommonCode.INVALIDPARAM, "入参为空！");
-                }
-            }
+        // 校验入参
+        if (cmsPage == null || StringUtils.isEmpty(cmsPage.getHtmlFileId()) ){
+            throw new CustomException(CommonCode.INVALIDPARAM, "页面不存在或者页面HtmlFileId为空");
+        }
 
-            @Override
-            public CmsResult<String> doProcess() {
+        // 根据页面fileId查询到gridfs上查询页面的html文件
+        InputStream inputStream = queryPageHtmlByFileId(cmsPage.getHtmlFileId());
+        // 页面所属站点
+        CmsSite cmsSite = queryCmsSitById(cmsPage.getSiteId());
 
-                Optional<CmsPage> pageResult = cmsPageRepository.findById(pageId);
-                if (!pageResult.isPresent()||pageResult.get()==null){
-                    throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
-                }
-                // 页面详情
-                CmsPage cmsPage = pageResult.get();
-                if (StringUtils.isEmpty(cmsPage.getHtmlFileId())){
-                    throw new CustomException(CommonCode.INVALIDPARAM, "页面HtmlFileId为空！");
-                }
-                // 根据页面fileId查询到gridfs上查询页面的html文件
-                InputStream inputStream = queryPageHtmlByFileId(cmsPage.getHtmlFileId());
-                if (inputStream == null){
-                    MQ_CONSUMER_LOGGER.error("PageService.savePageToServerPath consumer mq fail;根据页面HtmlFIleId查询页面Html文件出错，HtmlFileId：{}", cmsPage.getHtmlFileId());
-                }
-                // 页面所属站点
-                CmsSite cmsSite = queryCmsSitById(cmsPage.getSiteId());
-                if (cmsSite == null){
-                    throw new CustomException(CmsCode.CMS_PAGE_SITE_NOTEXISTS);
-                }
-                // 页面物理路径 = 站点物理路径+页面物理路径+页面名称
-                String pageHtml = cmsSite.getSitePhysicalPath()+cmsPage.getPagePhysicalPath()+cmsPage.getPageName();
+        // 页面物理路径 = 站点物理路径+页面物理路径+页面名称
+        String pageHtmlPath = cmsSite.getSitePhysicalPath()+cmsPage.getPagePhysicalPath()+cmsPage.getPageName();
 
-                // 将页面html文件写入服务器物理地址
-                FileOutputStream fileOutputStream = null;
+        // 将页面html文件写入服务器物理地址
+        FileOutputStream fileOutputStream = null;
+        try {
+            fileOutputStream  = new FileOutputStream(new File(pageHtmlPath));
+            IOUtils.copy(inputStream, fileOutputStream);
+
+            return CmsResult.newSuccessResult(pageHtmlPath);
+        }catch (IOException e) {
+            LoggerUtil.errorLog(MQ_CONSUMER_LOGGER, e,
+                    "PageService.savePageToServerPath consumer mq; [fail],将页面文件写入服务器物理路径失败！", "pageHtmlPath",pageHtmlPath,"cmsPage", cmsPage);
+            throw new CustomException(CmsCode.CMS_PAGE_IOEXCEPTION, "将页面文件写入服务器物理路径失败！"+e.getMessage(), e);
+        }finally {
+            if (inputStream != null){
                 try {
-                    fileOutputStream  = new FileOutputStream(new File(pageHtml));
-                    IOUtils.copy(inputStream, fileOutputStream);
-
-                    return CmsResult.newSuccessResult(pageHtml);
-                }catch (IOException e) {
-                    e.printStackTrace();
-                    MQ_CONSUMER_LOGGER.error("PageService.savePageToServerPath consumer mq fail;将页面文件写入服务器物理路径失败！pageId:{},", pageId);
-                    return CmsResult.newFailResult();
-                }finally {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        fileOutputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    inputStream.close();
+                } catch (IOException e) {
                 }
             }
-        });
+            if (fileOutputStream != null){
+                try {
+                    fileOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
     }
 
@@ -142,9 +111,10 @@ public class PageServiceImpl implements PageService {
         try {
             return gridFsResource.getInputStream();
         } catch (IOException e) {
-            MQ_CONSUMER_LOGGER.error("PageService.savePageToServerPath consumer mq fail;通过GridFs下载文件失！id：{}",htmlFileId);
+            LoggerUtil.errorLog(MQ_CONSUMER_LOGGER, e,
+                    "PageService.savePageToServerPath consumer mq; [fail],根据页面HtmlFIleId查询页面Html文件出错!","htmlFileId",htmlFileId);
+            throw new CustomException(CommonCode.FAIL,"通过GridFs下载html页面错误！"+e.getMessage(), e);
         }
-        return null;
     }
 
     /**
@@ -154,15 +124,10 @@ public class PageServiceImpl implements PageService {
      */
     private CmsSite queryCmsSitById(String id){
         Optional<CmsSite> optional = cmsSiteRepository.findById(id);
-        if (optional.isPresent()){
-            return optional.get();
+        if (!optional.isPresent()||optional.get() == null){
+            throw new CustomException(CmsCode.CMS_PAGE_SITE_NOTEXISTS);
         }
-        return null;
-    }
-
-
-    public void setCmsPageRepository(CmsPageRepository cmsPageRepository) {
-        this.cmsPageRepository = cmsPageRepository;
+        return optional.get();
     }
 
     public void setCmsSiteRepository(CmsSiteRepository cmsSiteRepository) {

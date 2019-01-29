@@ -17,7 +17,7 @@ import java.util.List;
 public class CmsPageRepositoryTest {
 
     @Autowired
-    private CmsPageRepository cmsPageRepository;
+    private CmsPageDao cmsPageRepository;
 
     @Test
     public void findALL(){
