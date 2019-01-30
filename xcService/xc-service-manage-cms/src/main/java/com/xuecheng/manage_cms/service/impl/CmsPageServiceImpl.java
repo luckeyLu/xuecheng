@@ -329,21 +329,7 @@ public class CmsPageServiceImpl implements CmsPageService {
 
             @Override
             public CmsResult<String> doProcess() {
-                CmsPage cmsPage = cmsPageRepository.queryById(pageId);
-                if (cmsPage == null){
-                    throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
-                }
-                // 1.获得页面模型数据
-                Map model = getModel(cmsPage);
-
-                // 2.获取页面模板
-                String tempalate = getTempalate(cmsPage);
-
-                // 3.执行静态化
-                String html = generateHtml(tempalate, model);
-
-                // 返回结果
-                return new CmsResult<String>(CommonCode.SUCCESS, html);
+                return new CmsResult<String>(CommonCode.SUCCESS, getPageHtmlByPageId(pageId));
             }
         });
     }
@@ -379,12 +365,10 @@ public class CmsPageServiceImpl implements CmsPageService {
                     cmsPage.setPageName(pageId+".html");
                 }
                 // 执行页面静态化
-                CmsResult<String> pageHtmlResult = getPageHtml(pageId);
-                if (!pageHtmlResult.isSuccess()||pageHtmlResult.getResultData()==null){
-                    throw new CustomException(CmsCode.CMS_PAGE_FREEMAEKRERROR);
-                }
+                String pageHtml = getPageHtmlByPageId(pageId);
+
                 // 将静态化文件页面保存到GridFs
-                savaPageHtmlToGridFs(cmsPage, pageHtmlResult.getResultData());
+                savaPageHtmlToGridFs(cmsPage, pageHtml);
                 // 向消息中间件发送消息
                 sendPostPage(cmsPage);
 
@@ -436,6 +420,27 @@ public class CmsPageServiceImpl implements CmsPageService {
         cmsPage.setHtmlFileId(objectId.toHexString());
         CmsPage save = cmsPageRepository.innerOrUpdate(cmsPage);
         return save;
+    }
+
+    /**
+     *  根据pageId生成页面html文件
+     * @return
+     */
+    private String getPageHtmlByPageId(String pageId){
+        CmsPage cmsPage = cmsPageRepository.queryById(pageId);
+        if (cmsPage == null){
+            throw new CustomException(CmsCode.CMS_PAGE_NOTEXISTS);
+        }
+        // 1.获得页面模型数据
+        Map model = getModel(cmsPage);
+
+        // 2.获取页面模板
+        String tempalate = getTempalate(cmsPage);
+
+        // 3.执行静态化
+        String html = generateHtml(tempalate, model);
+
+        return html;
     }
 
     /**

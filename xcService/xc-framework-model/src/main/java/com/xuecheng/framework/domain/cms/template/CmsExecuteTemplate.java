@@ -3,6 +3,7 @@ package com.xuecheng.framework.domain.cms.template;
 import com.xuecheng.framework.domain.cms.response.CmsResult;
 import com.xuecheng.framework.model.constants.CommonConstants;
 import com.xuecheng.framework.utils.LoggerUtil;
+import com.xuecheng.framework.utils.ThreadLocalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +30,8 @@ public class CmsExecuteTemplate {
 
         LoggerUtil.infoLog(CMS_EXCUTE_LOGGER,
                 bizLog+" [End]("+obj.isSuccess()+")"+" [Time-consuming] : "+(System.currentTimeMillis()-startTiems)+"ms");
+        // 清除本地线程变量
+        ThreadLocalUtil.clearRef();
         return obj;
     }
 }

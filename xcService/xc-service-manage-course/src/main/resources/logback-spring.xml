@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <!--定义日志文件的存储地址,使用绝对路径-->
+    <property name="LOG_HOME" value="d:/logs"/>
+
+    <!-- Console 控制台输出设置 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>utf8</charset>
+        </encoder>
+    </appender>
+
+    <!--
+    <appender>标签：用于指定日志输出方式和输出格式
+        ch.qos.logback.core.rolling.RollingFileAppender:文件日志输出,
+        encoder:指定日志格式
+        rollingPolicy:标签指定的是日志分包策略
+        ch.qos.logback.core.rolling.TimeBasedRollingPolicy类实现的是基于时间的分包策略，
+        分包间隔是根据fileNamePattern中指定的事件最小单位，比如例子中的%d{yyyy-MM-dd}的最小事件单位为天，
+        它的触发方式就是一天，策略在每次想日志中添加新内容时触发，如果满足条件，
+        就将xxx.log.2019.01.25复制到D:/logs/cms目录并更名为xxx.log.2019.01.25，并删除原xxx.log.2019.01.25。
+    -->
+
+    <!-- 项目启动日志 -->
+    <appender name="START" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <fileNamePattern>${LOG_HOME}/xc-course-start.log.%d{yyyy-MM-dd}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 异步输出 -->
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <!-- 不丢失日志.默认的,如果队列的80%已满,则会丢弃TRACT、DEBUG、INFO级别的日志 -->
+        <discardingThreshold>0</discardingThreshold>
+        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
+        <queueSize>512</queueSize>
+        <!-- 添加附加的appender,最多只能添加一个 -->
+        <appender-ref ref="START"/>
+    </appender>
+
+
+    <!-- #################################################################################################### -->
+
+
+    <!-- ###################################################################################################### -->
+
+    <logger name="org.apache.ibatis.cache.decorators.LoggingCache" level="DEBUG" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+    <logger name="org.springframework.boot" level="DEBUG"/>
+
+    <root level="info">
+        <!--<appender-ref ref="ASYNC"/>-->
+        <appender-ref ref="START"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

@@ -7,6 +7,7 @@ import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.model.response.ResponseResult;
 import com.xuecheng.framework.model.response.ResultCode;
 import com.xuecheng.framework.utils.LoggerUtil;
+import com.xuecheng.framework.utils.ThreadLocalUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -45,6 +46,9 @@ public class ExceptionCatch {
     @ResponseBody
     public ResponseResult catchCustomException(CustomException e){
         LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch CustomException : "+e.getResultCode().message()+"\r\nexception: ");
+        // 清除本地线程变量
+        ThreadLocalUtil.clearRef();
+
         ResultCode resultCode = e.getResultCode();
         if (!StringUtils.isEmpty(e.getMessage())){
             return new ResponseResult(resultCode, e.getMessage());
@@ -61,6 +65,9 @@ public class ExceptionCatch {
     @ResponseBody
     public ResponseResult catchException(Exception e){
         LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch UnknownException : "+e.getMessage()+"\r\nexception: ");
+        // 清除本地线程变量
+        ThreadLocalUtil.clearRef();
+
         if (EXCEPTIONS == null) {
             EXCEPTIONS = builder.build();
         }

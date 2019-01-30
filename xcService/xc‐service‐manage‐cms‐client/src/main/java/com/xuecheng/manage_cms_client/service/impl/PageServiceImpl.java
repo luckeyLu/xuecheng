@@ -74,6 +74,7 @@ public class PageServiceImpl implements PageService {
             IOUtils.copy(inputStream, fileOutputStream);
 
             return CmsResult.newSuccessResult(pageHtmlPath);
+            // 清除本地线程变量
         }catch (IOException e) {
             LoggerUtil.errorLog(MQ_CONSUMER_LOGGER, e,
                     "PageService.savePageToServerPath consumer mq; [fail],将页面文件写入服务器物理路径失败！", "pageHtmlPath",pageHtmlPath,"cmsPage", cmsPage);

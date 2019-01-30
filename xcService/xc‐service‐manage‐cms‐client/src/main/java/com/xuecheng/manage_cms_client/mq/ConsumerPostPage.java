@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.xuecheng.framework.domain.cms.CmsPage;
 import com.xuecheng.framework.model.constants.CommonConstants;
 import com.xuecheng.framework.utils.LoggerUtil;
+import com.xuecheng.framework.utils.ThreadLocalUtil;
 import com.xuecheng.manage_cms_client.config.RabbitmqConfig;
 import com.xuecheng.manage_cms_client.dao.CmsPageRepository;
 import com.xuecheng.manage_cms_client.service.PageService;
@@ -48,11 +49,15 @@ public class ConsumerPostPage {
         // 校验接收到的消息
         if (StringUtils.isEmpty(pageId)){
             LoggerUtil.warnLog(MQ_CONSUMER_LOGGER, "Receive postpage msg, pageId is empty", "message", msg);
+            // 清除本地线程变量
+            ThreadLocalUtil.clearRef();
             return;
         }
         Optional<CmsPage> optional = cmsPageRepository.findById(pageId);
         if (!optional.isPresent()||optional.get()==null){
             LoggerUtil.warnLog(MQ_CONSUMER_LOGGER, "Query cmsPage by pageId is null", "pageId", pageId);
+            // 清除本地线程变量
+            ThreadLocalUtil.clearRef();
             return;
         }
         pageService.savePageToServerPath(optional.get());
@@ -60,6 +65,8 @@ public class ConsumerPostPage {
         LoggerUtil.infoLog(MQ_CONSUMER_LOGGER,"PageService.savePageToServerPath consumer mq; [success]","MQ message", msg,
                 "Exchange",RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, "Queue", RabbitmqConfig.QUEUE_CMS_POSTPAGE, "routingKey", routingKey);
 
+        // 清除本地线程变量
+        ThreadLocalUtil.clearRef();
     }
 
     public void setPageService(PageService pageService) {
