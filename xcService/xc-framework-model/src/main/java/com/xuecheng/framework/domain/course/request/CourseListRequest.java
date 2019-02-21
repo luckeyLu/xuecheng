@@ -1,6 +1,7 @@
 package com.xuecheng.framework.domain.course.request;
 
-import com.xuecheng.framework.model.request.RequestData;
+import com.xuecheng.framework.model.pagination.PaginationBaseVo;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -9,7 +10,8 @@ import lombok.ToString;
  */
 @Data
 @ToString
-public class CourseListRequest extends RequestData {
+public class CourseListRequest extends PaginationBaseVo {
     //公司Id
+    @ApiModelProperty("公司Id")
     private String companyId;
 }

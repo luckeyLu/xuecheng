@@ -6,8 +6,8 @@ package com.xuecheng.framework.model.constants;
  */
 public class CommonConstants {
 
-    /**  cms公共基础日志 */
-    public static final String CMS_EXCUTE_LOGGER = "CMS_EXCUTE_LOGGER";
+    /**  公共基础日志 */
+    public static final String COMMON_EXCUTE_LOGGER = "COMMON_EXCUTE_LOGGER";
 
     /**  公共错误日志 */
     public static final String COMMON_ERROR_LOGGER = "COMMON_ERROR_LOGGER";
@@ -17,5 +17,7 @@ public class CommonConstants {
 
     /** mq消费者日志 */
     public static final String MQ_CONSUMER_LOGGER = "MQ_CONSUMER_LOGGER";
+
+
 
 }

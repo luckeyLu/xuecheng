@@ -17,6 +17,7 @@ import com.xuecheng.framework.model.pagination.PaginationVo;
 import com.xuecheng.framework.model.response.CommonCode;
 import com.xuecheng.framework.utils.LoggerUtil;
 import com.xuecheng.manage_cms.config.RabbitmqConfig;
+import com.xuecheng.manage_cms.rabbitMq.RabbitMqManage;
 import com.xuecheng.manage_cms.repository.CmsPageRepository;
 import com.xuecheng.manage_cms.repository.CmsTemplateRepository;
 import com.xuecheng.manage_cms.service.CmsPageService;
@@ -28,7 +29,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -73,7 +73,7 @@ public class CmsPageServiceImpl implements CmsPageService {
     private GridFSBucket gridFSBucket;
 
     @Autowired
-    private RabbitTemplate rabbitTemplate;
+    private RabbitMqManage rabbitManage;
 
     /**
      *  页面分页查询
@@ -389,7 +389,7 @@ public class CmsPageServiceImpl implements CmsPageService {
 
         try {
             // 发送消息
-            rabbitTemplate.convertAndSend(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,cmsPage.getSiteId(), msgJson);
+            rabbitManage.sendMessage(RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE,cmsPage.getSiteId(), msgJson);
 
             LoggerUtil.infoLog(MQ_PRODUER_LOGGER,
                     "RabbitMq sending messages success;","Exchange",RabbitmqConfig.EX_ROUTING_CMS_POSTPAGE, "MQ Message",msgJson );
@@ -547,7 +547,7 @@ public class CmsPageServiceImpl implements CmsPageService {
         this.gridFSBucket = gridFSBucket;
     }
 
-    public void setRabbitTemplate(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
+    public void setRabbitManage(RabbitMqManage rabbitManage) {
+        this.rabbitManage = rabbitManage;
     }
 }

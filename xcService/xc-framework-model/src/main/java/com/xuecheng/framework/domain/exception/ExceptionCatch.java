@@ -8,10 +8,10 @@ import com.xuecheng.framework.model.response.ResponseResult;
 import com.xuecheng.framework.model.response.ResultCode;
 import com.xuecheng.framework.utils.LoggerUtil;
 import com.xuecheng.framework.utils.ThreadLocalUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.util.StringUtils;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -45,7 +45,11 @@ public class ExceptionCatch {
     @ExceptionHandler
     @ResponseBody
     public ResponseResult catchCustomException(CustomException e){
-        LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch CustomException : "+e.getResultCode().message()+"\r\nexception: ");
+        if (StringUtils.isEmpty(e.getMessage())){
+            LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch CustomException : "+e.getResultCode().message()+"\r\nexception: ");
+        }else {
+            LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch CustomException : "+e.getResultCode().message()+e.getMessage()+"\r\nexception: ");
+        }
         // 清除本地线程变量
         ThreadLocalUtil.clearRef();
 

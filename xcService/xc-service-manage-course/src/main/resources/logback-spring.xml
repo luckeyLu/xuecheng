@@ -2,7 +2,7 @@
 
 <configuration>
     <!--定义日志文件的存储地址,使用绝对路径-->
-    <property name="LOG_HOME" value="d:/logs"/>
+    <property name="LOG_HOME" value="d:/logs/course"/>
 
     <!-- Console 控制台输出设置 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
@@ -46,7 +46,42 @@
     </appender>
 
 
+    <!-- 公共错误日志appender -->
+    <appender name="ERROR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <fileNamePattern>${LOG_HOME}/xc-course-error.log.%d{yyyy-MM-dd}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 公共信息日志appender -->
+    <appender name="COMMON_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--日志文件输出的文件名-->
+            <fileNamePattern>${LOG_HOME}/xc-course-degist.log.%d{yyyy-MM-dd}</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
     <!-- #################################################################################################### -->
+
+    <!-- 公共错误日志logger -->
+    <logger name="COMMON_ERROR_LOGGER" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="ERROR_APPENDER"/>
+    </logger>
+
+    <!-- 公共信息日志logger -->
+    <logger name="COMMON_EXCUTE_LOGGER" additivity="false">
+        <level value="info"/>
+        <appender-ref ref="COMMON_APPENDER"/>
+    </logger>
 
 
     <!-- ###################################################################################################### -->

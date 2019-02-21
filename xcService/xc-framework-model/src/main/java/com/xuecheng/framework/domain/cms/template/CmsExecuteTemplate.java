@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * Created by lwenf on 2019-01-18.
  */
 public class CmsExecuteTemplate {
-    private static final Logger CMS_EXCUTE_LOGGER = LoggerFactory.getLogger(CommonConstants.CMS_EXCUTE_LOGGER);
+    private static final Logger CMS_EXCUTE_LOGGER = LoggerFactory.getLogger(CommonConstants.COMMON_EXCUTE_LOGGER);
 
     public static <T, K extends CmsResult<T>> CmsResult<T> execute(CmsHandleCallback<K> callback){
 

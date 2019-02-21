@@ -13,6 +13,11 @@ spring:
     username: guest
     password: guest
     virtualHost: /
+    publisher-confirms: true
+    publisher-returns: true
+    #listener:
+          #simple:
+            #acknowledge-mode: manual # 开启手动确认消息
 xuecheng:
   mq:
     #cms客户端监控的队列名称（不同的客户端监控的队列不能重复）

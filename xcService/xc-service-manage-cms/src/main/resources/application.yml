@@ -13,6 +13,11 @@ spring:
     username: guest
     password: guest
     virtualHost: /
+    publisher-confirms: true
+    publisher-returns: true
+    #listener:
+          #simple:
+            #acknowledge-mode: manual # 开启手动确认消息
   freemarker:
     cache: false #关闭缓存，方便测试
     settings:
