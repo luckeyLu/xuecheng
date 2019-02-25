@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
@@ -150,6 +151,60 @@ public class CourseServiceImpl implements CourseService {
                 paginationVo.setPageSize(courseListRequest.getPageSize());
 
                 return CourseResult.newSuccessResult(paginationVo);
+            }
+        });
+    }
+
+    @Override
+    public CourseResult<CategoryNode> queryCategoryList() {
+        return CourseExecuteTemplate.execute(new CourseHandleCallback<CourseResult<CategoryNode>>() {
+            @Override
+            public String buildLog() {
+                return LoggerUtil.
+                        buildParaLog("CourseService.queryCategoryList");
+            }
+
+            @Override
+            public void checkParams() {
+
+            }
+
+            @Override
+            public CourseResult<CategoryNode> doProcess() {
+                return CourseResult.newSuccessResult(courseRepository.queryCategoryList());
+            }
+        });
+    }
+
+    @Override
+    public CourseResult<CourseBase> addCourseBase(CourseBase courseBase) {
+        return CourseExecuteTemplate.execute(new CourseHandleCallback<CourseResult<CourseBase>>() {
+            @Override
+            public String buildLog() {
+                return LoggerUtil.
+                        buildParaLog("CourseService.addCourseBase", "CourseBase", courseBase);
+            }
+
+            @Override
+            public void checkParams() {
+                if ((courseBase == null) ||
+                        StringUtils.isEmpty(courseBase.getName()) ||
+                        StringUtils.isEmpty(courseBase.getGrade()) ||
+                        StringUtils.isEmpty(courseBase.getStudymodel())){
+                    throw new CustomException(CommonCode.INVALIDPARAM, "添加课程基本信息入参有误！");
+                }
+                CourseBase courseBaseNew = courseRepository.queryCourseByName(courseBase.getName());
+                if (courseBaseNew != null){
+                    throw new CustomException(CourseCode.COURSE_BASE_ISNOTONLY,"课程名称重复！");
+                }
+                if (StringUtils.isNotEmpty(courseBase.getCompanyId())){
+                    courseBase.setCompanyId(null);
+                }
+            }
+
+            @Override
+            public CourseResult<CourseBase> doProcess() {
+                return CourseResult.newSuccessResult(courseRepository.addCourseBase(courseBase));
             }
         });
     }

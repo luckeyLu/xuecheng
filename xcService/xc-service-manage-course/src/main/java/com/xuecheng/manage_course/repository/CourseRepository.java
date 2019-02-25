@@ -3,6 +3,7 @@ package com.xuecheng.manage_course.repository;
 import com.github.pagehelper.Page;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
@@ -57,4 +58,24 @@ public interface CourseRepository {
      * @return
      */
     public Page<CourseInfo> queryCourseByPagination(CourseListRequest courseListRequest);
+
+    /**
+     *  查询课程分类
+     * @return
+     */
+    public CategoryNode queryCategoryList();
+
+    /**
+     *  根据课程名称查询课程基本信息
+     * @param name
+     * @return
+     */
+    public CourseBase queryCourseByName(String name);
+
+    /**
+     *  添加课程基本信息
+     * @param courseBase
+     * @return
+     */
+    public CourseBase addCourseBase(CourseBase courseBase);
 }

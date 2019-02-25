@@ -29,7 +29,7 @@ public class CmsExecuteTemplate {
         K obj = callback.doProcess();
 
         LoggerUtil.infoLog(CMS_EXCUTE_LOGGER,
-                bizLog+" [End]("+obj.isSuccess()+")"+" [Time-consuming] : "+(System.currentTimeMillis()-startTiems)+"ms");
+                bizLog + " [End]("+obj.isSuccess()+")"+" [Time-consuming] : "+(System.currentTimeMillis()-startTiems)+"ms");
         // 清除本地线程变量
         ThreadLocalUtil.clearRef();
         return obj;

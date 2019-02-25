@@ -23,7 +23,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @ControllerAdvice
 public class ExceptionCatch {
+    /** 公共异常错误日志 */
     private static final Logger COMMON_ERROR_LOGGER = LoggerFactory.getLogger(CommonConstants.COMMON_ERROR_LOGGER);
+    /**  公共基础日志 */
+    private static final Logger COMMON_EXCUTE_LOGGER = LoggerFactory.getLogger(CommonConstants.COMMON_EXCUTE_LOGGER);
 
     // 存放费自定义异常类型与错误代码映射，ImmutableMap特点：一点创建不可改变，且线程安全
     private static ImmutableMap<Class<? extends Throwable>, ResultCode> EXCEPTIONS;
@@ -45,6 +48,8 @@ public class ExceptionCatch {
     @ExceptionHandler
     @ResponseBody
     public ResponseResult catchCustomException(CustomException e){
+        // 打印公共基础日志
+        LoggerUtil.infoLog(COMMON_EXCUTE_LOGGER, "[result="+e.getResultCode()+"] [end](false)");
         if (StringUtils.isEmpty(e.getMessage())){
             LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch CustomException : "+e.getResultCode().message()+"\r\nexception: ");
         }else {
@@ -68,6 +73,8 @@ public class ExceptionCatch {
     @ExceptionHandler
     @ResponseBody
     public ResponseResult catchException(Exception e){
+        // 打印公共基础日志
+        LoggerUtil.infoLog(COMMON_EXCUTE_LOGGER, " (result="+e.getMessage()+") [end](false)");
         LoggerUtil.errorLog(COMMON_ERROR_LOGGER, e, "catch UnknownException : "+e.getMessage()+"\r\nexception: ");
         // 清除本地线程变量
         ThreadLocalUtil.clearRef();

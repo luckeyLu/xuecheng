@@ -3,11 +3,13 @@ package com.xuecheng.manage_course.repository.impl;
 import com.github.pagehelper.Page;
 import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
 import com.xuecheng.manage_course.dao.jpa.CourseBaseDao;
 import com.xuecheng.manage_course.dao.jpa.TeachplanDao;
+import com.xuecheng.manage_course.dao.mapper.CategoryMapper;
 import com.xuecheng.manage_course.dao.mapper.CourseMapper;
 import com.xuecheng.manage_course.dao.mapper.TeachplanMapper;
 import com.xuecheng.manage_course.repository.CourseRepository;
@@ -35,6 +37,9 @@ public class CourseRepositoryImpl implements CourseRepository {
 
     @Autowired
     private CourseMapper courseMapper;
+
+    @Autowired
+    private CategoryMapper categoryMapper;
 
     @Override
     public TeachplanNode queryTeachplanByCourseId(String courseId) {
@@ -72,5 +77,20 @@ public class CourseRepositoryImpl implements CourseRepository {
     @Override
     public Page<CourseInfo> queryCourseByPagination(CourseListRequest courseListRequest) {
         return courseMapper.queryByPagination();
+    }
+
+    @Override
+    public CategoryNode queryCategoryList() {
+        return categoryMapper.queryList();
+    }
+
+    @Override
+    public CourseBase queryCourseByName(String name) {
+        return courseBaseDao.findByName(name);
+    }
+
+    @Override
+    public CourseBase addCourseBase(CourseBase courseBase) {
+        return courseBaseDao.save(courseBase);
     }
 }

@@ -30,7 +30,9 @@ public enum CourseCode implements ResultCode {
 
     COURSE_TEACHPLAN_NOTOCOURSEBASE(false,31104,"课程计划未关联到课程！"),
 
-    COURSE_TEACHPLAN_PTEACHPLANISNULL(false,31105,"课程计划父节点未空！");
+    COURSE_TEACHPLAN_PTEACHPLANISNULL(false,31105,"课程计划父节点未空！"),
+
+    COURSE_BASE_ISNOTONLY(false,31106,"课程基本信息必须唯一！");
 
     //操作代码
     @ApiModelProperty(value = "操作是否成功", example = "true", required = true)

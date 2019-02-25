@@ -1,7 +1,9 @@
 package com.xuecheng.manage_course.controller;
 
 import com.xuecheng.api.course.CourseControllerApi;
+import com.xuecheng.framework.domain.course.CourseBase;
 import com.xuecheng.framework.domain.course.Teachplan;
+import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.framework.domain.course.request.CourseListRequest;
@@ -37,5 +39,17 @@ public class CourseController implements CourseControllerApi {
     @PostMapping("/teachplan/add")
     public CourseResult<Teachplan> addTeachplan(@RequestBody Teachplan teachplan) {
         return courseService.addTeachplan(teachplan);
+    }
+
+    @Override
+    @GetMapping("/category/list")
+    public CourseResult<CategoryNode> querycategoryList() {
+        return courseService.queryCategoryList();
+    }
+
+    @Override
+    @PostMapping ("/coursebase/add")
+    public CourseResult<CourseBase> addCourseBase(@RequestBody CourseBase courseBase) {
+        return courseService.addCourseBase(courseBase);
     }
 }

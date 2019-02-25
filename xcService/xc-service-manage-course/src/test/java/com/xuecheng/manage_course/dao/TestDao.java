@@ -3,9 +3,11 @@ package com.xuecheng.manage_course.dao;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.xuecheng.framework.domain.course.CourseBase;
+import com.xuecheng.framework.domain.course.ext.CategoryNode;
 import com.xuecheng.framework.domain.course.ext.CourseInfo;
 import com.xuecheng.framework.domain.course.ext.TeachplanNode;
 import com.xuecheng.manage_course.dao.jpa.CourseBaseDao;
+import com.xuecheng.manage_course.dao.mapper.CategoryMapper;
 import com.xuecheng.manage_course.dao.mapper.CourseMapper;
 import com.xuecheng.manage_course.dao.mapper.TeachplanMapper;
 import org.junit.Test;
@@ -28,9 +30,10 @@ public class TestDao {
     CourseBaseDao courseBaseRepository;
     @Autowired
     CourseMapper courseMapper;
-
     @Autowired
     TeachplanMapper teachplanMapper;
+    @Autowired
+    CategoryMapper categoryMapper;
 
     @Test
     public void testCourseBaseRepository(){
@@ -62,6 +65,12 @@ public class TestDao {
         long total = courseInfos.getTotal();
         System.out.println(result);
         System.out.println(total);
+    }
 
+    @Test
+    public void testCategoryMapper(){
+        CategoryNode categoryNode = categoryMapper.queryList();
+
+        System.out.println(categoryNode);
     }
 }
